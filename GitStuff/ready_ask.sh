@@ -28,5 +28,6 @@ echo "Creating links to push-all,pull-all and fetch-all scripts..."
 ln -s AnySoftKeyboardTools/GitStuff/push-all.sh push-all.sh
 ln -s AnySoftKeyboardTools/GitStuff/pull-all.sh pull-all.sh
 ln -s AnySoftKeyboardTools/GitStuff/fetch-all.sh fetch-all.sh
+ln -s AnySoftKeyboardTools/GitStuff/misc.sh misc.sh
 
 echo "Thanks for cloning AnySoftKeyboard!"
