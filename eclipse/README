@@ -1,0 +1,4 @@
+You can import these files to make Eclipse follow the Android style rules.
+Select Window > Preferences > Java > Code Style.
+Use Formatter > Import to import android-formatting.xml.
+Organize Imports > Import to import android.importorder.
