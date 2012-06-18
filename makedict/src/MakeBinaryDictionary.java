@@ -15,26 +15,23 @@
  * limitations under the License.
  */
 
-import org.xml.sax.Attributes;
-import org.xml.sax.helpers.DefaultHandler;
-
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
+import org.xml.sax.Attributes;
+import org.xml.sax.helpers.DefaultHandler;
 
 /**
  * Compresses a list of words and frequencies into a tree structured binary dictionary.
@@ -69,60 +66,94 @@ public class MakeBinaryDictionary {
         }
     }
     
-    public static void main(String[] args) {
-    	final File currentFolder = new File(".");
+    public static void main(String[] args) throws IOException {
+    	final File currentFolder = new File(System.getProperty("user.dir"));
     	final File inputFile = new File(currentFolder, "dict/words.xml");
     	final File tempOutputFile = new File(currentFolder, "dict/words.dict");
     	final File outputFolder = new File(currentFolder, "res/raw/");
     	
     	System.out.println("Reading words from input "+inputFile.getAbsolutePath());
     	System.out.println("Will store output files under "+outputFolder.getAbsolutePath());
-    	
+    	//deleting current files
+    	tempOutputFile.delete();
+    	File[] dictFiles = outputFolder.listFiles(new FilenameFilter() {
+			@Override
+			public boolean accept(File arg0, String arg1) {
+				return arg1.contains(".dict");
+			}
+		});
+    	if (dictFiles != null && dictFiles.length > 0)
+    	{
+    		for (File file : dictFiles) {
+    			file.delete();
+			} 
+    	}
         new MakeBinaryDictionary(inputFile.getAbsolutePath(), tempOutputFile.getAbsolutePath());
         //now, if the file is larger than 1MB, I'll need to split it to 1MB chunks and rename them.
         if (tempOutputFile.exists()) {
-        	//output should be words_1.dict....words_n.dict
-    		InputStream inputStream = new FileInputStream(inputFile);
-    		int file_postfix = 0;
-    		int current_output_file_size = 0;
-    		byte[] buffer = 4*1024;
-    		OutputStream outputStream = null;
-    		while((int read = inputStream.read(buffer)) > 0) {
-    			if (outputStream != null && current_output_file_size >= DICT_FILE_CHUNK_SIZE) {
-    				outputStream.flush();
-    				outputStream.close();
-    				outputStream = null;
-    			}
-    			
-    			if (outputStream == null) {
-    				file_postfix++;
-    				current_output_file_size = 0;
-    				File chunkFile = new File(outputFolder, "words_"+file_postfix+".dict");
-    				outputStream = new FileOutputStream(chunkFile);
-    				System.out.println("Writing to dict file "+chunkFile.getAbsolutePath());
-    			}
-    			
-    			outputStream.write(buffer, 0, read);
-    			current_output_file_size += read;
-    		}
-    		
-    		inputStream.close();
-    		if (outputStream != null) {
-    			outputStream.flush();
-    			outputStream.close();
-    			outputStream = null;
-			}
-    		System.out.println("Done. Wrote "+file_postfix+" files.");
+        	final int file_postfix = splitOutputFile(tempOutputFile, outputFolder);
+        	//creating the dict array XML resource
+        	File dict_id_array = new File(currentFolder, "/res/values/words_dict_array.xml");
+        	XmlWriter xml = new XmlWriter(dict_id_array);
+        	xml.writeEntity("resources");
+        	xml.writeEntity("array").writeAttribute("name", "words_dict_array");
+        	for(int i=1;i<=file_postfix;i++)
+        	{
+        		xml.writeEntity("item").writeText("@raw/words_"+i).endEntity();
+        	}
+        	xml.endEntity();
+        	xml.endEntity();
+        	xml.close();
+        	//no need for that temp file
+        	tempOutputFile.deleteOnExit();
         }
+        
     }
+
+	public static int splitOutputFile(final File tempOutputFile,
+			final File outputFolder) throws FileNotFoundException, IOException {
+		//output should be words_1.dict....words_n.dict
+		InputStream inputStream = new FileInputStream(tempOutputFile);
+		int file_postfix = 0;
+		int current_output_file_size = 0;
+		byte[] buffer = new byte[4*1024];
+		OutputStream outputStream = null;
+		int read = 0;
+		while((read = inputStream.read(buffer)) > 0) {
+			if (outputStream != null && current_output_file_size >= DICT_FILE_CHUNK_SIZE) {
+				outputStream.flush();
+				outputStream.close();
+				outputStream = null;
+			}
+			
+			if (outputStream == null) {
+				file_postfix++;
+				current_output_file_size = 0;
+				File chunkFile = new File(outputFolder, "words_"+file_postfix+".dict");
+				outputStream = new FileOutputStream(chunkFile);
+				System.out.println("Writing to dict file "+chunkFile.getAbsolutePath());
+			}
+			
+			outputStream.write(buffer, 0, read);
+			current_output_file_size += read;
+		}
+		
+		inputStream.close();
+		if (outputStream != null) {
+			outputStream.flush();
+			outputStream.close();
+			outputStream = null;
+		}
+		System.out.println("Done. Wrote "+file_postfix+" files.");
+		
+		return file_postfix;
+	}
 
     public MakeBinaryDictionary(String srcFilename, String destFilename) {
         populateDictionary(srcFilename);
         writeToDict(destFilename);
         // Enable the code below to verify that the generated tree is traversable.
-        if (false) {
-            traverseDict(0, new char[32], 0);
-        }
+        //traverseDict(0, new char[32], 0);
     }
     
     private void populateDictionary(String filename) {
