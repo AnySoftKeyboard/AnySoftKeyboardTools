@@ -6,6 +6,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
@@ -52,7 +53,17 @@ public class Verifier {
     }
 
     public static void main(String[] args) throws ParserConfigurationException, SAXException,
-            IOException {
+            IOException, NoSuchAlgorithmException {
+        boolean releaseMode = false;
+        if (args != null)
+        {
+            for (String arg : args) {
+                if (arg.equals("release"))
+                    releaseMode = true;
+            }
+        }
+        if (releaseMode)
+            System.out.println("Starting verification of RELEASE mode!");
         // will verify that the project at the current working folder is valid
         // tests:
         // 1) package name is valid
@@ -78,6 +89,26 @@ public class Verifier {
 
         if (packDetails.ThemeSourceCodeFile != null)
             verifyThemeDeclaration(currentFolder, packDetails);
+        
+        //checking app icons have been changed
+        verifyFileCheckSumHasChanged(new File(currentFolder, "/res/drawable/app_icon.png"), "0e71ddf43d0147f7cacc7e1d154cb2f2a031d804", releaseMode);
+        verifyFileCheckSumHasChanged(new File(currentFolder, "/res/drawable-hdpi/app_icon.png"), "ea1f28b777177aae01fb0f717c4c04c0f72cac71", releaseMode);
+        verifyFileCheckSumHasChanged(new File(currentFolder, "/res/drawable-xhdpi/app_icon.png"), "862166a2f482b0a9422dc4ed8b293f93b04d6e20", releaseMode);
+        verifyFileCheckSumHasChanged(new File(currentFolder, "/StoreStuff/landscape.png"), "0b39e1c3824515ff2f406bd1ad811774306cdfe4", releaseMode);
+        verifyFileCheckSumHasChanged(new File(currentFolder, "/StoreStuff/portrait.png"), "cd995002d2ea98b16d1e1a1b981b0dadd996c6a6", releaseMode);
+        verifyFileCheckSumHasChanged(new File(currentFolder, "/StoreStuff/store_hi_res_icon.png"), "83d31f26cd4bb3dc719aaa739a82ab6fc5af1b82", releaseMode);
+    }
+
+    private static void verifyFileCheckSumHasChanged(File file, final String invalidCheckSum, boolean releaseMode) throws NoSuchAlgorithmException, IOException {
+        final String currentFileCheckSum = FileCheckSumGenerator.generateFileCheckSum(file);
+        System.out.println("The file '"+file+"' checksum is "+currentFileCheckSum);
+        if (currentFileCheckSum.equals(invalidCheckSum)) {
+            if (releaseMode) {
+                throw new InvalidPackConfiguration(file.getAbsolutePath(), "The file need to be customized for this pack!");
+            } else {
+                System.out.println("The file '"+file+"' need to be customized for this pack!");
+            }
+        }
     }
 
     private static void verifyAntBuildFile(File currentFolder, PackDetails packDetails)
