@@ -1,3 +1,5 @@
+import java.io.File;
+
 
 public class InvalidPackConfiguration extends RuntimeException {
 
@@ -8,5 +10,9 @@ public class InvalidPackConfiguration extends RuntimeException {
 
     public InvalidPackConfiguration(String filename, String error) {
         super(String.format("Configuration file '%s' is invalid! Error: %s", filename, error));
+    }
+    
+    public InvalidPackConfiguration(File filename, String error) {
+        this(filename.getAbsolutePath(), error);
     }
 }

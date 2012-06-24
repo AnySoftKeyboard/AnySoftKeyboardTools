@@ -77,6 +77,8 @@ public class Verifier {
         final PackDetails packDetails = verifyAndroidManifestAndGetPackageName(currentFolder);
         System.out.println("Package name is " + packDetails.PackageName);
 
+        verifyStringsFileIsValid(currentFolder, packDetails);
+        
         verifyAntBuildFile(currentFolder, packDetails);
 
         verifySourceCodeHasCorrectPackageName(currentFolder, packDetails);
@@ -205,6 +207,72 @@ public class Verifier {
             throw new InvalidPackConfiguration(source.getAbsolutePath(),
                     "Package name is invalid, it should be " + packDetails.PackageName);
         }
+    }
+    
+
+
+    private static void verifyStringsFileIsValid(File currentFolder, PackDetails packDetails) throws IOException, ParserConfigurationException, SAXException {
+        final File stringFile = new File(currentFolder, "res/values/strings.xml");
+        System.out.println("Verifying strings resources file for validity...");
+        SAXParser parser = SAXParserFactory.newInstance().newSAXParser();
+        parser.parse(stringFile, new DefaultHandler() {
+            private boolean mInPackName = false;
+            private boolean mInKeyboardName = false;
+            private boolean mInDictionaryName = false;
+            private boolean mInThemeName = false;
+            
+            private String mResourceValue = "";
+            @Override
+            public void startElement(String uri, String localName, String qName,
+                    Attributes attributes) throws SAXException {
+                super.startElement(uri, localName, qName, attributes);
+                if (qName.equals("string")) {
+                    final String resourceName = attributes.getValue("app_name");
+                    mInPackName = resourceName.equals("app_name");
+                    mInKeyboardName = resourceName.equals("keyboard_name");
+                    mInDictionaryName = resourceName.equals("dictionary_name");
+                    mInThemeName = resourceName.equals("theme_name");
+                }
+            }
+            
+            @Override
+            public void characters(char[] ch, int start, int length) throws SAXException {
+                super.characters(ch, start, length);
+                mResourceValue += new String(ch, start, length);
+            }
+            
+            @Override
+            public void endElement(String uri, String localName, String qName) throws SAXException {
+                super.endElement(uri, localName, qName);
+                if (mInPackName) {
+                    if (!mResourceValue.contains("AnySoftKeyboard")) {
+                        throw new InvalidPackConfiguration(stringFile, "Pack name must include 'AnySoftKeyboard'!");
+                    }
+                    if (mResourceValue.contains("change_me")) {
+                        throw new InvalidPackConfiguration(stringFile, "Pack name must be customized for this new pack!");
+                    }
+                }
+                if (mInKeyboardName) {
+                    if (!mResourceValue.toLowerCase().contains("keyboard")) {
+                        throw new InvalidPackConfiguration(stringFile, "Keyboard name must include 'Keyboard'!");
+                    }
+                    if (mResourceValue.contains("change_me")) {
+                        throw new InvalidPackConfiguration(stringFile, "Keyboard name must be customized for this new pack!");
+                    }
+                }
+                if (mInDictionaryName) {
+                    if (mResourceValue.contains("change_me")) {
+                        throw new InvalidPackConfiguration(stringFile, "Dictionary name must be customized for this new pack!");
+                    }
+                }
+                if (mInThemeName) {
+                    if (mResourceValue.contains("change_me")) {
+                        throw new InvalidPackConfiguration(stringFile, "Theme name must be customized for this new pack!");
+                    }
+                }
+                mResourceValue = "";
+            }
+        });
     }
 
     private static PackDetails verifyAndroidManifestAndGetPackageName(File currentFolder)
