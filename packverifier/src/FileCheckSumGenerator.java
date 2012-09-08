@@ -17,6 +17,7 @@ public class FileCheckSumGenerator {
         while ((nread = fis.read(dataBytes)) != -1) {
           md.update(dataBytes, 0, nread);
         };
+        fis.close();
      
         byte[] mdbytes = md.digest();
      
