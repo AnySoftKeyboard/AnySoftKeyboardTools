@@ -227,11 +227,11 @@ public class Verifier {
                     Attributes attributes) throws SAXException {
                 super.startElement(uri, localName, qName, attributes);
                 if (qName.equals("string")) {
-                    final String resourceName = attributes.getValue("app_name");
-                    mInPackName = resourceName.equals("app_name");
-                    mInKeyboardName = resourceName.equals("keyboard_name");
-                    mInDictionaryName = resourceName.equals("dictionary_name");
-                    mInThemeName = resourceName.equals("theme_name");
+                    final String resourceName = attributes.getValue("name");
+                    mInPackName = resourceName != null && resourceName.equals("app_name");
+                    mInKeyboardName = resourceName != null && resourceName.equals("keyboard_name");
+                    mInDictionaryName = resourceName != null && resourceName.equals("dictionary_name");
+                    mInThemeName = resourceName != null && resourceName.equals("theme_name");
                 }
             }
             
