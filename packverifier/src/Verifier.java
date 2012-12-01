@@ -93,16 +93,18 @@ public class Verifier {
             verifyThemeDeclaration(currentFolder, packDetails);
         
         //checking app icons have been changed
-        verifyFileCheckSumHasChanged(new File(currentFolder, "/res/drawable/app_icon.png"), "0e71ddf43d0147f7cacc7e1d154cb2f2a031d804", releaseMode);
-        verifyFileCheckSumHasChanged(new File(currentFolder, "/res/drawable-hdpi/app_icon.png"), "ea1f28b777177aae01fb0f717c4c04c0f72cac71", releaseMode);
-        verifyFileCheckSumHasChanged(new File(currentFolder, "/res/drawable-xhdpi/app_icon.png"), "862166a2f482b0a9422dc4ed8b293f93b04d6e20", releaseMode);
-        verifyFileCheckSumHasChanged(new File(currentFolder, "/StoreStuff/landscape.png"), "0b39e1c3824515ff2f406bd1ad811774306cdfe4", releaseMode);
-        verifyFileCheckSumHasChanged(new File(currentFolder, "/StoreStuff/portrait.png"), "cd995002d2ea98b16d1e1a1b981b0dadd996c6a6", releaseMode);
-        verifyFileCheckSumHasChanged(new File(currentFolder, "/StoreStuff/store_hi_res_icon.png"), "83d31f26cd4bb3dc719aaa739a82ab6fc5af1b82", releaseMode);
+        verifyFileCheckSumHasChanged(new File(currentFolder, "/res/drawable/app_icon.png"), true, "0e71ddf43d0147f7cacc7e1d154cb2f2a031d804", releaseMode);
+        verifyFileCheckSumHasChanged(new File(currentFolder, "/res/drawable-hdpi/app_icon.png"), false, "ea1f28b777177aae01fb0f717c4c04c0f72cac71", releaseMode);
+        verifyFileCheckSumHasChanged(new File(currentFolder, "/res/drawable-xhdpi/app_icon.png"), false, "862166a2f482b0a9422dc4ed8b293f93b04d6e20", releaseMode);
+        verifyFileCheckSumHasChanged(new File(currentFolder, "/StoreStuff/landscape.png"), true, "0b39e1c3824515ff2f406bd1ad811774306cdfe4", releaseMode);
+        verifyFileCheckSumHasChanged(new File(currentFolder, "/StoreStuff/portrait.png"), true, "cd995002d2ea98b16d1e1a1b981b0dadd996c6a6", releaseMode);
+        verifyFileCheckSumHasChanged(new File(currentFolder, "/StoreStuff/store_hi_res_icon.png"), true, "83d31f26cd4bb3dc719aaa739a82ab6fc5af1b82", releaseMode);
     }
 
-    private static void verifyFileCheckSumHasChanged(File file, final String invalidCheckSum, boolean releaseMode) throws NoSuchAlgorithmException, IOException {
-        final String currentFileCheckSum = FileCheckSumGenerator.generateFileCheckSum(file);
+    private static void verifyFileCheckSumHasChanged(File file, final boolean mustExist, final String invalidCheckSum, boolean releaseMode) throws NoSuchAlgorithmException, IOException {
+        if (!mustExist && !file.exists()) return;
+        
+    	final String currentFileCheckSum = FileCheckSumGenerator.generateFileCheckSum(file);
         System.out.println("The file '"+file+"' checksum is "+currentFileCheckSum);
         if (currentFileCheckSum.equals(invalidCheckSum)) {
             if (releaseMode) {
@@ -253,9 +255,6 @@ public class Verifier {
                     }
                 }
                 if (mInKeyboardName) {
-                    if (!mResourceValue.toLowerCase().contains("keyboard")) {
-                        throw new InvalidPackConfiguration(stringFile, "Keyboard name must include 'Keyboard'!");
-                    }
                     if (mResourceValue.contains("change_me")) {
                         throw new InvalidPackConfiguration(stringFile, "Keyboard name must be customized for this new pack!");
                     }
