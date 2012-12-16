@@ -71,9 +71,11 @@ public class MakeBinaryDictionary {
     	final File inputFile = new File(currentFolder, "dict/words.xml");
     	final File tempOutputFile = new File(currentFolder, "dict/words.dict");
     	final File outputFolder = new File(currentFolder, "res/raw/");
+    	final File dict_id_array = new File(currentFolder, "/res/values/words_dict_array.xml");
     	
     	System.out.println("Reading words from input "+inputFile.getAbsolutePath());
     	System.out.println("Will store output files under "+outputFolder.getAbsolutePath());
+    	System.out.println("Deleting previous versions...");
     	//deleting current files
     	tempOutputFile.delete();
     	File[] dictFiles = outputFolder.listFiles(new FilenameFilter() {
@@ -88,12 +90,17 @@ public class MakeBinaryDictionary {
     			file.delete();
 			} 
     	}
+    	dict_id_array.delete();
+    	
+    	if (!inputFile.exists()) {
+    		System.out.println("No input file found. Quiting.");
+    		return;
+    	}
         new MakeBinaryDictionary(inputFile.getAbsolutePath(), tempOutputFile.getAbsolutePath());
         //now, if the file is larger than 1MB, I'll need to split it to 1MB chunks and rename them.
         if (tempOutputFile.exists()) {
         	final int file_postfix = splitOutputFile(tempOutputFile, outputFolder);
         	//creating the dict array XML resource
-        	File dict_id_array = new File(currentFolder, "/res/values/words_dict_array.xml");
         	XmlWriter xml = new XmlWriter(dict_id_array);
         	xml.writeEntity("resources");
         	xml.writeEntity("array").writeAttribute("name", "words_dict_array");
