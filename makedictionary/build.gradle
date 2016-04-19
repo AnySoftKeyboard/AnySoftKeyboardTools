@@ -1,0 +1,15 @@
+group 'com.anysoftkeyboard'
+version '1.0-SNAPSHOT'
+
+apply plugin: 'groovy'
+
+sourceCompatibility = 1.7
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    compile 'com.android.tools.build:gradle:1.5.0'
+    compile gradleApi()
+}
