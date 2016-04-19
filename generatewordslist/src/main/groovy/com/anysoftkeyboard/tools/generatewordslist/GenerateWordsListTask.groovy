@@ -17,25 +17,40 @@ package com.anysoftkeyboard.tools.generatewordslist;
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
+import org.jsoup.Jsoup
 
 /**
  * Task to generate words-list XML file from a input
  */
 public class GenerateWordsListTask extends DefaultTask {
+    public enum InputFileType {
+        Text,
+        Html
+    }
 
-    File inputTextFile;
+    File inputFile;
+    InputFileType inputFileType = InputFileType.Text
     File outputWordsListFile;
 
-    char[] wordCharacters
-    char[] additionalInnerCharacters
+    char[] wordCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray()
+    char[] additionalInnerCharacters = "'".toCharArray()
 
-    Locale locale
+    Locale locale = Locale.US
 
     int maxWordsInList = Integer.MAX_VALUE
 
     @TaskAction
     def generateWordsList() {
-        Parser parser = new Parser(inputTextFile, outputWordsListFile, wordCharacters, locale, additionalInnerCharacters, maxWordsInList)
+        File wordsInputFile = inputFile
+        if (inputFileType.equals(InputFileType.Html)) {
+            wordsInputFile = File.createTempFile("stripped_html_", ".txt")
+            String inputText = Jsoup.parse(inputFile, "UTF-8").text()
+            FileWriter writer = new FileWriter(wordsInputFile)
+            writer.write(inputText)
+            writer.flush()
+            writer.close()
+        }
+        Parser parser = new Parser(wordsInputFile, outputWordsListFile, wordCharacters, locale, additionalInnerCharacters, maxWordsInList)
         parser.parse()
     }
 }

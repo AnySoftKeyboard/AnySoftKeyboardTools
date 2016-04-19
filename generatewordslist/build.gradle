@@ -11,4 +11,6 @@ repositories {
 
 dependencies {
     compile gradleApi()
+
+    compile 'org.jsoup:jsoup:1.9.1'
 }
