@@ -47,6 +47,13 @@ Then add a `Task` to create the binary-dictionary:
 ```
 task makeEnglishDictionary(type: com.anysoftkeyboard.tools.makedictionary.MakeDictionaryTask) {
     inputWordsListFile new File(project.getProjectDir(), "english_dictionary/words.xml")
+}
+```
+
+optionally, if your `res` folder is non-standard, or you have multiple such folders, you may want to specify its location:
+```
+task makeEnglishDictionary(type: com.anysoftkeyboard.tools.makedictionary.MakeDictionaryTask) {
+    inputWordsListFile new File(project.getProjectDir(), "english_dictionary/words.xml")
     resourcesFolder new File(project.getProjectDir(), "src/main/res/")
 }
 ```
@@ -55,3 +62,5 @@ To create the dictionary, run the task from command-line:
 ```
 ./gradlew makeEnglishDictionary
 ```
+
+See an actual, real world, usage at [AnySoftKeyboard](https://github.com/AnySoftKeyboard/AnySoftKeyboard/blob/master/build.gradle)
