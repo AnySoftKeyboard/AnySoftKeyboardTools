@@ -49,7 +49,7 @@ public class MainClass {
 
         final File outputFolder = new File(resourcesFolder, "raw/");
         final File dict_id_array = new File(resourcesFolder, "values/words_dict_array.xml");
-
+        
         System.out.println("Reading words from input " + inputFile.getAbsolutePath());
         System.out.println("Will store output files under " + outputFolder.getAbsolutePath());
         System.out.println("Deleting previous versions...");
