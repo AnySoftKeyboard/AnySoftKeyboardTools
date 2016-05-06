@@ -32,6 +32,8 @@ public class MergeWordsListTask extends DefaultTask {
     File[] inputWordsListFiles;
     File outputWordsListFile;
 
+    String[] wordsToDiscard = []
+
     int maxWordsInList = Integer.MAX_VALUE
 
     @TaskAction
@@ -39,30 +41,37 @@ public class MergeWordsListTask extends DefaultTask {
         if (inputWordsListFiles == null || inputWordsListFiles.length == 0) throw new IllegalArgumentException("Must specify at least one inputWordsListFiles")
         if (outputWordsListFile == null) throw new IllegalArgumentException("Must supply outputWordsListFile")
 
-        System.out.println(String.format(Locale.US, "Merging %d files for maximum %d words, and writing into '%s'.", inputWordsListFiles.length, maxWordsInList, outputWordsListFile));
-        HashMap<String, WordWithCount> allWords = new HashMap<>();
+        println "Merging ${inputWordsListFiles.length} files for maximum ${maxWordsInList} words, and writing into '${outputWordsListFile}'. Discarding ${wordsToDiscard.length} words."
+        HashMap<String, WordWithCount> allWords = new HashMap<>()
 
         for (File inputFile : inputWordsListFiles) {
-            System.out.println("Reading "+inputFile)
+            println "Reading ${inputFile}..."
             if (!inputFile.exists()) throw new FileNotFoundException(inputFile.absolutePath);
             SAXParserFactory parserFactor = SAXParserFactory.newInstance();
             SAXParser parser = parserFactor.newSAXParser();
             parser.parse(inputFile, new MySaxHandler(allWords))
         }
 
-        System.out.println("Sorting list...");
+        //discarding unwanted words
+        if (wordsToDiscard.length > 0) {
+            print 'Discarding words...'
+            wordsToDiscard.findAll({ word -> if (allWords.remove(word) != null) print '.' })
+            println ''
+        }
+
+        println 'Sorting list...'
         List<WordWithCount> sortedList = new ArrayList<>(Math.min(maxWordsInList, allWords.size()))
         sortedList.addAll(allWords.values());
         Collections.sort(sortedList);
 
-        System.out.println("Creating output XML file...");
+        println 'Creating output XML file...'
         Writer output = new OutputStreamWriter(new FileOutputStream(outputWordsListFile))
         Parser.createXml(sortedList, output, maxWordsInList);
 
         output.flush();
         output.close();
 
-        System.out.println("Done.");
+        println 'Done.'
     }
 
     private static class MySaxHandler extends DefaultHandler {
