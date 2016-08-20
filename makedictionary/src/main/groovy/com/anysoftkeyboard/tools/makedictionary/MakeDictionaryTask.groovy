@@ -13,8 +13,7 @@ public class MakeDictionaryTask extends DefaultTask {
 
     @TaskAction
     def makeDictionary() {
-        com.android.build.gradle.AppExtension androidConfiguration = project.android;
-        if (resourcesFolder == null) resourcesFolder = androidConfiguration.sourceSets["main"].res.srcDirs[0]
+        if (resourcesFolder == null) resourcesFolder = new File(project.projectDir, "/src/main/res/")
         MainClass.buildDictionary(inputWordsListFile, resourcesFolder)
     }
 }
