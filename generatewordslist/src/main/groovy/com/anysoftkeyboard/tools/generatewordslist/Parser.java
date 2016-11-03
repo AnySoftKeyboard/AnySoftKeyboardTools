@@ -102,7 +102,7 @@ class Parser {
         long read = 0;
         while ((intChar = input.read()) > 0) {
             if ((read % 50000) == 0 || read == inputSize) {
-                System.out.println("Read " + read + " out of " + inputSize + " (" + ((100 * read) / inputSize) + "%)...");
+                System.out.print("." + ((100 * read) / inputSize) + "%.");
             }
             char currentChar = (char) intChar;
             read++;
@@ -126,6 +126,7 @@ class Parser {
         //last word?
         if (word.length() > 0)
             addWord(word);
+        System.out.println("Done.");
     }
 
     private void addWord(StringBuilder word) {
