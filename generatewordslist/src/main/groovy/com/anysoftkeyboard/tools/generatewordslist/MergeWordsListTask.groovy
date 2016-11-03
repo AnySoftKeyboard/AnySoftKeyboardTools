@@ -50,6 +50,7 @@ public class MergeWordsListTask extends DefaultTask {
             SAXParserFactory parserFactor = SAXParserFactory.newInstance();
             SAXParser parser = parserFactor.newSAXParser();
             parser.parse(inputFile, new MySaxHandler(allWords))
+            println "Loaded ${allWords.size()} words in total..."
         }
 
         //discarding unwanted words
@@ -60,8 +61,7 @@ public class MergeWordsListTask extends DefaultTask {
         }
 
         println 'Sorting list...'
-        List<WordWithCount> sortedList = new ArrayList<>(Math.min(maxWordsInList, allWords.size()))
-        sortedList.addAll(allWords.values());
+        List<WordWithCount> sortedList = new ArrayList<>(allWords.values())
         Collections.sort(sortedList);
 
         println 'Creating output XML file...'
@@ -78,7 +78,7 @@ public class MergeWordsListTask extends DefaultTask {
         private HashMap<String, WordWithCount> allWords;
         boolean inWord
         StringBuilder word = new StringBuilder()
-        int freq=0
+        int freq = 0
 
         public MySaxHandler(HashMap<String, WordWithCount> allWords) {
             this.allWords = allWords
