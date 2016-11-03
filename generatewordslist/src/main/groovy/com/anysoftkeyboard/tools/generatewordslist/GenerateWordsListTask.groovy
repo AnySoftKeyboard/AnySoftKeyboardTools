@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.anysoftkeyboard.tools.generatewordslist;
+package com.anysoftkeyboard.tools.generatewordslist
 
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
@@ -28,7 +28,7 @@ public class GenerateWordsListTask extends DefaultTask {
         Html
     }
 
-    File inputFile;
+    File[] inputFiles;
     InputFileType inputFileType = InputFileType.Text
     File outputWordsListFile;
 
@@ -41,16 +41,22 @@ public class GenerateWordsListTask extends DefaultTask {
 
     @TaskAction
     def generateWordsList() {
-        File wordsInputFile = inputFile
-        if (inputFileType.equals(InputFileType.Html)) {
-            wordsInputFile = File.createTempFile("stripped_html_", ".txt")
-            String inputText = Jsoup.parse(inputFile, "UTF-8").text()
-            FileWriter writer = new FileWriter(wordsInputFile)
-            writer.write(inputText)
-            writer.flush()
-            writer.close()
+        List<File> inputTextFiles = new ArrayList<>()
+        inputFiles.each {
+            if (inputFileType.equals(InputFileType.Html)) {
+                File wordsInputFile = File.createTempFile("stripped_html_", ".txt")
+                String inputText = Jsoup.parse(it, "UTF-8").text()
+                FileWriter writer = new FileWriter(wordsInputFile)
+                writer.write(inputText)
+                writer.flush()
+                writer.close()
+                inputTextFiles.add(wordsInputFile)
+            } else {
+                inputTextFiles.add(it)
+            }
         }
-        Parser parser = new Parser(wordsInputFile, outputWordsListFile, wordCharacters, locale, additionalInnerCharacters, maxWordsInList)
+
+        Parser parser = new Parser(inputTextFiles, outputWordsListFile, wordCharacters, locale, additionalInnerCharacters, maxWordsInList)
         parser.parse()
     }
 }

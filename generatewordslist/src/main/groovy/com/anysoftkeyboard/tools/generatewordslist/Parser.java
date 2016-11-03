@@ -7,7 +7,7 @@ class Parser {
 
     private final static int LOOKING_FOR_WORD_START = 1;
     private final static int LOOKING_FOR_WORD_END = 2;
-    private final InputStreamReader mInput;
+    private final List<File> mInputFiles;
     private final OutputStreamWriter mOutput;
     private final HashSet<Character> mLangChars;
     private final HashSet<Character> mLangInnerChars;
@@ -15,14 +15,18 @@ class Parser {
     private final long mInputSize;
     private final int mMaxListSize;
     private final Locale mLocale;
-    public Parser(File inputFile, File outputFile, char[] wordCharacters, Locale locale, char[] additionalInnerWordCharacters, int maxListSize) throws IOException {
-        if (!inputFile.exists()) throw new IOException("Could not file input file " + inputFile);
-        if (!inputFile.isFile()) throw new IOException("Input must be a file.");
-
+    public Parser(List<File> inputFiles, File outputFile, char[] wordCharacters, Locale locale, char[] additionalInnerWordCharacters, int maxListSize) throws IOException {
+        if (inputFiles.size() == 0) throw new IllegalArgumentException("Files list should be at least 1 size.");
+        long totalFilesSize = 0;
+        for (File inputFile : inputFiles) {
+            if (!inputFile.exists()) throw new IOException("Could not file input file " + inputFile);
+            if (!inputFile.isFile()) throw new IOException("Input must be a file.");
+            totalFilesSize += inputFile.length();
+        }
+        mInputFiles = Collections.unmodifiableList(inputFiles);
         mLocale = locale;
         mMaxListSize = maxListSize;
-        mInputSize = inputFile.length();
-        mInput = new InputStreamReader(new FileInputStream(inputFile));
+        mInputSize = totalFilesSize;
         mOutput = new OutputStreamWriter(new FileOutputStream(outputFile));
 
         mLangInnerChars = new HashSet<>(additionalInnerWordCharacters.length + wordCharacters.length);
@@ -38,14 +42,16 @@ class Parser {
 
         mWords = new HashMap<>();
 
-        System.out.println(String.format(Locale.US, "Parsing '%s' for maximum %d words, and writing into '%s'.", inputFile, mMaxListSize, outputFile));
+        System.out.println(String.format(Locale.US, "Parsing %d files for a maximum of %d words, and writing into '%s'.", mInputFiles.size(), mMaxListSize, outputFile));
     }
 
     public void parse() throws IOException {
-        System.out.println("Reading input...");
-        addWordsFromInputStream(mInput);
-
-        mInput.close();
+        for (File inputFile : mInputFiles) {
+            System.out.println(String.format(Locale.US, "Reading input file %s...", inputFile));
+            InputStreamReader inputStream = new FileReader(inputFile);
+            addWordsFromInputStream(inputStream);
+            inputStream.close();
+        }
 
         System.out.println("Sorting list...");
         List<WordWithCount> sortedList = new ArrayList<>(Math.min(mWords.size(), mMaxListSize));
