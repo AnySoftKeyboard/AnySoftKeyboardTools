@@ -23,13 +23,7 @@ import org.jsoup.Jsoup
  * Task to generate words-list XML file from a input
  */
 public class GenerateWordsListTask extends DefaultTask {
-    public enum InputFileType {
-        Text,
-        Html
-    }
-
     File[] inputFiles;
-    InputFileType inputFileType = InputFileType.Text
     File outputWordsListFile;
 
     char[] wordCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray()
@@ -43,16 +37,18 @@ public class GenerateWordsListTask extends DefaultTask {
     def generateWordsList() {
         List<File> inputTextFiles = new ArrayList<>()
         inputFiles.each {
-            if (inputFileType.equals(InputFileType.Html)) {
-                File wordsInputFile = File.createTempFile("stripped_html_", ".txt")
+            if (it.name.endsWith(".html") || it.name.endsWith(".htm")) {
+                File wordsInputFile = File.createTempFile(it.name + "_stripped_html_", ".txt")
                 String inputText = Jsoup.parse(it, "UTF-8").text()
                 FileWriter writer = new FileWriter(wordsInputFile)
                 writer.write(inputText)
                 writer.flush()
                 writer.close()
                 inputTextFiles.add(wordsInputFile)
-            } else {
+            } else if (it.name.endsWith(".txt")) {
                 inputTextFiles.add(it)
+            } else {
+                println("Skipping file %s, since it's not txt or html file.")
             }
         }
 
