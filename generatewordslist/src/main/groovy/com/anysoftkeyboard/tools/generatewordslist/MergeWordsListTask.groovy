@@ -66,7 +66,7 @@ public class MergeWordsListTask extends DefaultTask {
 
         println 'Creating output XML file...'
         Writer output = new OutputStreamWriter(new FileOutputStream(outputWordsListFile))
-        Parser.createXml(sortedList, output, maxWordsInList);
+        Parser.createXml(sortedList, output, maxWordsInList, true);
 
         output.flush();
         output.close();

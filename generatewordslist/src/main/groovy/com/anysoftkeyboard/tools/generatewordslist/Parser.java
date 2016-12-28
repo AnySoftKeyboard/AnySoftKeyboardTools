@@ -69,7 +69,7 @@ class Parser {
         Collections.sort(sortedList);
 
         System.out.println("Creating output XML file...");
-        createXml(sortedList, mOutput, mMaxListSize);
+        createXml(sortedList, mOutput, mMaxListSize, false);
 
         mOutput.flush();
         mOutput.close();
@@ -77,14 +77,15 @@ class Parser {
         System.out.println("Done.");
     }
 
-    public static void createXml(List<WordWithCount> sortedList, Writer outputWriter, int maxListSize) throws IOException {
+    public static void createXml(List<WordWithCount> sortedList, Writer outputWriter, int maxListSize, boolean takeFrequencyFromWordObject) throws IOException {
         final int wordsCount = Math.min(maxListSize, sortedList.size());
 
         XmlWriter writer = new XmlWriter(outputWriter, false, 0, true);
         writer.writeEntity("wordlist");
         for (int wordIndex = 0; wordIndex < wordsCount; wordIndex++) {
             WordWithCount word = sortedList.get(wordIndex);
-            writer.writeEntity("w").writeAttribute("f", Integer.toString(calcActualFreq(wordIndex, wordsCount))).writeText(word.getWord()).endEntity();
+
+            writer.writeEntity("w").writeAttribute("f", Integer.toString(takeFrequencyFromWordObject? word.getFreq() : calcActualFreq(wordIndex, wordsCount))).writeText(word.getWord()).endEntity();
         }
         System.out.println("Wrote " + wordsCount + " words.");
         writer.endEntity();

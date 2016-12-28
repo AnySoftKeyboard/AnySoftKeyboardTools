@@ -30,7 +30,7 @@ class WordWithCount implements Comparable<WordWithCount> {
     public WordWithCount(String word, int frequency) {
         mWord = word.toLowerCase();
         mFreq = frequency;
-        mCapitalFreq = Character.isUpperCase(word.charAt(0))? frequency : 0;
+        mCapitalFreq = -1/*this ensures that we take the word as is*/;
     }
 
     public String getKey() {
