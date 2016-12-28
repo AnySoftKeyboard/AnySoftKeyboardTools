@@ -15,35 +15,41 @@
  */
 package com.anysoftkeyboard.tools.generatewordslist;
 
+import java.util.HashMap;
+import java.util.Map;
+
 class WordWithCount implements Comparable<WordWithCount> {
-    private final String mWord;
+    private final String mKey;
+    private final Map<String, Integer> mWordVariants = new HashMap<>();
     private int mFreq;
-    private int mCapitalFreq;
 
     public WordWithCount(String word) {
-        mWord = word.toLowerCase();
+        mKey = word.toLowerCase();
+        mWordVariants.put(word, 1);
         mFreq = 0;
-        mCapitalFreq = 0;
-        addFreq(word);
     }
 
     public WordWithCount(String word, int frequency) {
-        mWord = word.toLowerCase();
+        mKey = word.toLowerCase();
+        mWordVariants.put(word, 1);
         mFreq = frequency;
-        mCapitalFreq = -1/*this ensures that we take the word as is*/;
     }
 
     public String getKey() {
-        return mWord;
+        return mKey;
     }
 
     public String getWord() {
-        //if more than 90% of the word occurrences are capital,
-        //then use capital style
-        if ((mFreq * 0.90) < mCapitalFreq)
-            return Character.toUpperCase(mWord.charAt(0)) + mWord.substring(1);
-        else
-            return mWord;
+        String mostUsedWord = mKey;
+        int mostUsedValue = Integer.MIN_VALUE;
+        for (Map.Entry<String, Integer> variant : mWordVariants.entrySet()) {
+            if (variant.getValue() > mostUsedValue) {
+                mostUsedValue = variant.getValue();
+                mostUsedWord = variant.getKey();
+            }
+        }
+
+        return mostUsedWord;
     }
 
     public int getFreq() {
@@ -52,12 +58,14 @@ class WordWithCount implements Comparable<WordWithCount> {
 
     public void addFreq(String word) {
         if (mFreq < Integer.MAX_VALUE) mFreq++;
-        if (Character.isUpperCase(word.charAt(0))) mCapitalFreq++;
+        mWordVariants.compute(word, (s, usages) -> usages == null? 1 : usages+1);
     }
 
     public void addOtherWord(WordWithCount wordWithCount) {
-        mFreq += wordWithCount.mFreq;
-        mCapitalFreq += wordWithCount.mCapitalFreq;
+        mFreq = Math.max(mFreq, wordWithCount.mFreq);
+        for (Map.Entry<String, Integer> variant : mWordVariants.entrySet()) {
+            mWordVariants.compute(variant.getKey(), (s, usages) -> usages == null? variant.getValue() : usages+variant.getValue());
+        }
     }
 
     @Override
