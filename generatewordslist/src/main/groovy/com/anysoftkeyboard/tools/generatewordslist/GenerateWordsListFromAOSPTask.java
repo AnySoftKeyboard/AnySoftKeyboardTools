@@ -20,7 +20,7 @@ import java.util.regex.Pattern;
  * https://android.googlesource.com/platform/packages/inputmethods/LatinIME/+/master/dictionaries/
  */
 public class GenerateWordsListFromAOSPTask extends DefaultTask {
-    private static final Pattern mWordLineRegex = Pattern.compile("^\\s*word=([\\w'\"-]+),f=(\\d+).*$");
+    private static final Pattern mWordLineRegex = Pattern.compile("^\\s*word=([\\w\\p{L}'\"-]+),f=(\\d+).*$");
 
     private File inputFile;
     private File outputWordsListFile;
