@@ -19,6 +19,8 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 import org.jsoup.Jsoup
 
+import java.nio.charset.Charset
+
 /**
  * Task to generate words-list XML file from a input
  */
@@ -40,7 +42,7 @@ public class GenerateWordsListTask extends DefaultTask {
             if (it.name.endsWith(".html") || it.name.endsWith(".htm")) {
                 File wordsInputFile = File.createTempFile(it.name + "_stripped_html_", ".txt")
                 String inputText = Jsoup.parse(it, "UTF-8").text()
-                FileWriter writer = new FileWriter(wordsInputFile)
+                Writer writer = new OutputStreamWriter(new FileOutputStream(wordsInputFile), Charset.forName("UTF-8"))
                 writer.write(inputText)
                 writer.flush()
                 writer.close()

@@ -5,10 +5,13 @@ import org.gradle.api.tasks.TaskAction;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -36,7 +39,7 @@ public class GenerateWordsListFromAOSPTask extends DefaultTask {
 
         final long inputSize = inputFile.length();
         System.out.println("Reading input file " + inputFile.getName() + " (size " + inputSize + ")...");
-        BufferedReader reader = new BufferedReader(new FileReader(inputFile));
+        BufferedReader reader = new BufferedReader(new InputStreamReader(new FileInputStream(inputFile), Charset.forName("UTF-8")));
         String wordDataLine;
         List<WordWithCount> parsedWords = new ArrayList<>();
         int read = 0;
@@ -59,7 +62,7 @@ public class GenerateWordsListFromAOSPTask extends DefaultTask {
         System.out.println("Sorting list of " + parsedWords.size() + " words...");
         Collections.sort(parsedWords);
 
-        OutputStreamWriter output = new OutputStreamWriter(new FileOutputStream(outputWordsListFile));
+        OutputStreamWriter output = new OutputStreamWriter(new FileOutputStream(outputWordsListFile), Charset.forName("UTF-8"));
         Parser.createXml(parsedWords, output, maxWordsInList, true);
 
         output.flush();

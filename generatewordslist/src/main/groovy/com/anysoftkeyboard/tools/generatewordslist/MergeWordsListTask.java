@@ -3,16 +3,20 @@ package com.anysoftkeyboard.tools.generatewordslist;
 import org.gradle.api.DefaultTask;
 import org.gradle.api.tasks.TaskAction;
 import org.xml.sax.Attributes;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXParseException;
 import org.xml.sax.helpers.DefaultHandler;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -42,8 +46,11 @@ public class MergeWordsListTask extends DefaultTask {
             if (!inputFile.exists()) throw new FileNotFoundException(inputFile.getAbsolutePath());
             SAXParserFactory parserFactor = SAXParserFactory.newInstance();
             SAXParser parser = parserFactor.newSAXParser();
-            parser.parse(inputFile, new MySaxHandler(allWords));
+            final InputStreamReader inputStream = new InputStreamReader(new FileInputStream(inputFile), Charset.forName("UTF-8"));
+            InputSource inputSource = new InputSource(inputStream);
+            parser.parse(inputSource, new MySaxHandler(allWords));
             System.out.println("Loaded " + allWords.size() + " words in total...");
+            inputStream.close();
         }
 
 
@@ -62,7 +69,7 @@ public class MergeWordsListTask extends DefaultTask {
         Collections.sort(sortedList);
 
         System.out.println("Creating output XML file...");
-        Writer output = new OutputStreamWriter(new FileOutputStream(outputWordsListFile));
+        Writer output = new OutputStreamWriter(new FileOutputStream(outputWordsListFile), Charset.forName("UTF-8"));
         Parser.createXml(sortedList, output, maxWordsInList, true);
 
         output.flush();
