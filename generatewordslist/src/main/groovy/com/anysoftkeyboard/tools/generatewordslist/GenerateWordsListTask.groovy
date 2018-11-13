@@ -25,8 +25,8 @@ import java.nio.charset.Charset
  * Task to generate words-list XML file from a input
  */
 public class GenerateWordsListTask extends DefaultTask {
-    File[] inputFiles;
-    File outputWordsListFile;
+    File[] inputFiles
+    File outputWordsListFile
 
     char[] wordCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz".toCharArray()
     char[] additionalInnerCharacters = "'".toCharArray()

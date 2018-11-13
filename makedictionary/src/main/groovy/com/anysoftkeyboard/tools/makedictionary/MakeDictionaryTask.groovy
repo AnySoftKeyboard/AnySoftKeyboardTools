@@ -8,12 +8,13 @@ import org.gradle.api.tasks.TaskAction
  */
 public class MakeDictionaryTask extends DefaultTask {
 
-    File inputWordsListFile;
+    File inputWordsListFile
     File resourcesFolder
+    String prefix
 
     @TaskAction
     def makeDictionary() {
         if (resourcesFolder == null) resourcesFolder = new File(project.projectDir, "/src/main/res/")
-        MainClass.buildDictionary(inputWordsListFile, resourcesFolder)
+        MainClass.buildDictionary(inputWordsListFile, resourcesFolder, prefix)
     }
 }

@@ -26,11 +26,13 @@ class BinaryDictionaryResourceNormalizer {
     private final File tempOutputFile;
     private final File outputFolder;
     private final File dict_id_array;
+    private final String mPrefix;
 
-    public BinaryDictionaryResourceNormalizer(File tempOutputFile, File outputFolder, File dict_id_array) {
+    public BinaryDictionaryResourceNormalizer(File tempOutputFile, File outputFolder, File dict_id_array, String prefix) {
         this.tempOutputFile = tempOutputFile;
         this.outputFolder = outputFolder;
         this.dict_id_array = dict_id_array;
+        mPrefix = prefix;
     }
 
     public void writeDictionaryIdsResource() throws IOException {
@@ -49,7 +51,7 @@ class BinaryDictionaryResourceNormalizer {
         int read = 0;
         XmlWriter xml = new XmlWriter(dict_id_array);
         xml.writeEntity("resources");
-        xml.writeEntity("array").writeAttribute("name", "words_dict_array");
+        xml.writeEntity("array").writeAttribute("name", mPrefix +"_words_dict_array");
 
         while ((read = inputStream.read(buffer)) > 0) {
             if (outputStream != null && current_output_file_size >= DICT_FILE_CHUNK_SIZE) {
@@ -60,9 +62,9 @@ class BinaryDictionaryResourceNormalizer {
 
             if (outputStream == null) {
                 file_postfix++;
-                xml.writeEntity("item").writeText("@raw/words_"+file_postfix).endEntity();
+                xml.writeEntity("item").writeText("@raw/" + mPrefix + "_words_" +file_postfix).endEntity();
                 current_output_file_size = 0;
-                File chunkFile = new File(outputFolder, "words_" + file_postfix + ".dict");
+                File chunkFile = new File(outputFolder, mPrefix + "_words_" + file_postfix + ".dict");
                 outputStream = new FileOutputStream(chunkFile);
                 System.out.println("Writing to dict file " + chunkFile.getAbsolutePath());
             }
