@@ -1,3 +1,9 @@
+# DEPRACATED!
+This repo is holding the tools needed to generate words-list and converting XMLs into binary dictionaries.
+This is not longer needed - the tools have moved to https://github.com/AnySoftKeyboard/LanguagePack as part of the buildSrc.
+
+DO NOT USED THIS REPO!
+
 AnySoftKeyboardTools
 ====================
 
